@@ -1,0 +1,77 @@
+;
+; YMCDriver.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=YMCDriver.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+YMCDriver_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+YMCDriver.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%YMCDriver.DeviceDesc%=YMCDriver_Device, Root\YMCDriver ; TODO: edit hw-id
+
+[YMCDriver_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+YMCDriver.sys
+
+;-------------- Service installation
+[YMCDriver_Device.NT.Services]
+AddService = YMCDriver,%SPSVCINST_ASSOCSERVICE%, YMCDriver_Service_Inst
+
+; -------------- YMCDriver driver install sections
+[YMCDriver_Service_Inst]
+DisplayName    = %YMCDriver.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\YMCDriver.sys
+
+;
+;--- YMCDriver_Device Coinstaller installation ------
+;
+
+[YMCDriver_Device.NT.CoInstallers]
+AddReg=YMCDriver_Device_CoInstaller_AddReg
+CopyFiles=YMCDriver_Device_CoInstaller_CopyFiles
+
+[YMCDriver_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[YMCDriver_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[YMCDriver_Device.NT.Wdf]
+KmdfService =  YMCDriver, YMCDriver_wdfsect
+[YMCDriver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "YMCDriver Installation Disk"
+YMCDriver.DeviceDesc = "YMCDriver Device"
+YMCDriver.SVCDESC = "YMCDriver Service"
